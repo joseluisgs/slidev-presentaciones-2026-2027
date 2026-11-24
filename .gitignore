@@ -1,16 +1,47 @@
-# Dependencias y builds
+# ============================================================
+# Slidev presentaciones — .gitignore
+# Regla de oro: NUNCA se commitea AGENTS.md (documentación del agente).
+# ============================================================
+
+# --- Dependencias ---
 node_modules/
-dist/
+**/node_modules/
 
-# Caché de Slidev (módulos virtuales: aparece en <carpeta-del-entry>/node_modules/.slidev)
+# --- Caché de Slidev ---
+# Módulos virtuales (import-glob…) que Slidev escribe en
+# <carpeta-del-entry>/node_modules/.slidev, p. ej. PROG/node_modules/.slidev
 **/node_modules/.slidev/
+.slidev/
+.vite/
 
-# Salida de las auditorías visuales
+# --- Builds y exports ---
+dist/
+dist-ssr/
+.cache/
+*.local
+
+# --- Auditoría visual (informes y capturas generadas) ---
 tools/out/
 
-# AGENTS.md: documentación interna, NUNCA se commitea
+# --- Transparencias (PDF): NO viven aquí ---
+# El profesor las copia cuando y donde diga; aquí solo se genera el output.
+presentaciones/*.pdf
+presentaciones/*.pptx
+
+# --- Documentación interna del agente: NUNCA se sube ---
 AGENTS.md
 
-# Sistema
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# --- Editores / IDE ---
+.idea/
+.vscode/
+*.swp
+
+# --- Sistema ---
 Thumbs.db
 .DS_Store
+desktop.ini
