@@ -1,0 +1,22 @@
+{
+  "name": "transparencias",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Presentaciones de todos los módulos del ciclo (Slidev) — un solo git, una línea npm por presentación",
+  "scripts": {
+    "dev:UDXX": "slidev PROG/UDXX.md",
+    "build:UDXX": "slidev build PROG/UDXX.md --out dist/UDXX",
+    "export:UDXX": "slidev export PROG/UDXX.md --output presentaciones/UDXX-claro.pdf",
+    "export:UDXX:dark": "slidev export PROG/UDXX.md --dark --output presentaciones/UDXX-oscuro.pdf",
+    "check:UDXX": "node tools/visual-check.mjs --md PROG/UDXX.md"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@slidev/cli": "^53.1.0",
+    "@slidev/theme-default": "latest",
+    "@slidev/types": "^53.1.0",
+    "playwright-chromium": "^1.65.1"
+  }
+}

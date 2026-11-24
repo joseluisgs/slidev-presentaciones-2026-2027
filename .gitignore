@@ -1,0 +1,16 @@
+# Dependencias y builds
+node_modules/
+dist/
+
+# Caché de Slidev (módulos virtuales: aparece en <carpeta-del-entry>/node_modules/.slidev)
+**/node_modules/.slidev/
+
+# Salida de las auditorías visuales
+tools/out/
+
+# AGENTS.md: documentación interna, NUNCA se commitea
+AGENTS.md
+
+# Sistema
+Thumbs.db
+.DS_Store
