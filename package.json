@@ -14,7 +14,17 @@
     "build:UD01": "slidev build PROG/UD01.md --out dist/UD01",
     "export:UD01": "slidev export PROG/UD01.md --output presentaciones/UD01-claro.pdf",
     "export:UD01:dark": "slidev export PROG/UD01.md --dark --output presentaciones/UD01-oscuro.pdf",
-    "check:UD01": "node tools/visual-check.mjs --md PROG/UD01.md"
+    "check:UD01": "node tools/visual-check.mjs --md PROG/UD01.md",
+    "dev:UD02": "slidev PROG/UD02.md",
+    "build:UD02": "slidev build PROG/UD02.md --out dist/UD02",
+    "export:UD02": "slidev export PROG/UD02.md --output presentaciones/UD02-claro.pdf",
+    "export:UD02:dark": "slidev export PROG/UD02.md --dark --output presentaciones/UD02-oscuro.pdf",
+    "check:UD02": "node tools/visual-check.mjs --md PROG/UD02.md",
+    "dev:UD03": "slidev PROG/UD03.md",
+    "build:UD03": "slidev build PROG/UD03.md --out dist/UD03",
+    "export:UD03": "slidev export PROG/UD03.md --output presentaciones/UD03-claro.pdf",
+    "export:UD03:dark": "slidev export PROG/UD03.md --dark --output presentaciones/UD03-oscuro.pdf",
+    "check:UD03": "node tools/visual-check.mjs --md PROG/UD03.md"
   },
   "dependencies": {
     "vue": "^3.5.13"
