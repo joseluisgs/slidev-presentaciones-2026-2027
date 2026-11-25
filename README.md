@@ -7,7 +7,14 @@ Presentaciones para los módulos impartidos en el ciclo de Desarrollo de Aplicac
 
 ## Contenidos
 
-1. [UDXX · Plantilla demo — Introducción a la Programación Software](PROG/UDXX.md) — es la plantilla demo (plantilla UDxx), aún no hay decks reales
+**Módulos:**
+
+1. [PROG](PROG/) — **1DAW. Programación**
+   - [UD01 · Introducción a la Programación Software](PROG/UD01.md)
+
+**Plantilla:**
+
+- [XX](XX/) — plantilla demo (`UDXX.md`), el molde del que se copian las UD nuevas
 
 
 
@@ -17,7 +24,7 @@ Presentaciones para los módulos impartidos en el ciclo de Desarrollo de Aplicac
 Una línea npm por presentación, con el sufijo de la UD (`UDXX` se sustituye por la UD real):
 
 ```bash
-npm run dev:UDXX          # desarrollo en local (slidev PROG/UDXX.md)
+npm run dev:UDXX          # desarrollo en local (slidev XX/UDXX.md)
 npm run build:UDXX        # build de producción (dist/UDXX)
 npm run export:UDXX       # exporta PDF tema claro → presentaciones/UDXX-claro.pdf
 npm run export:UDXX:dark  # exporta PDF tema oscuro → presentaciones/UDXX-oscuro.pdf

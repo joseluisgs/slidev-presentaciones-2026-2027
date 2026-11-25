@@ -2,13 +2,19 @@
   "name": "transparencias",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Presentaciones de todos los módulos del ciclo (Slidev) — un solo git, una línea npm por presentación",
   "scripts": {
-    "dev:UDXX": "slidev PROG/UDXX.md",
-    "build:UDXX": "slidev build PROG/UDXX.md --out dist/UDXX",
-    "export:UDXX": "slidev export PROG/UDXX.md --output presentaciones/UDXX-claro.pdf",
-    "export:UDXX:dark": "slidev export PROG/UDXX.md --dark --output presentaciones/UDXX-oscuro.pdf",
-    "check:UDXX": "node tools/visual-check.mjs --md PROG/UDXX.md"
+    "dev:UDXX": "slidev XX/UDXX.md",
+    "build:UDXX": "slidev build XX/UDXX.md --out dist/UDXX",
+    "export:UDXX": "slidev export XX/UDXX.md --output presentaciones/UDXX-claro.pdf",
+    "export:UDXX:dark": "slidev export XX/UDXX.md --dark --output presentaciones/UDXX-oscuro.pdf",
+    "check:UDXX": "node tools/visual-check.mjs --md XX/UDXX.md",
+    "dev:UD01": "slidev PROG/UD01.md",
+    "build:UD01": "slidev build PROG/UD01.md --out dist/UD01",
+    "export:UD01": "slidev export PROG/UD01.md --output presentaciones/UD01-claro.pdf",
+    "export:UD01:dark": "slidev export PROG/UD01.md --dark --output presentaciones/UD01-oscuro.pdf",
+    "check:UD01": "node tools/visual-check.mjs --md PROG/UD01.md"
   },
   "dependencies": {
     "vue": "^3.5.13"
