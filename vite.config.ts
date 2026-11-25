@@ -11,4 +11,11 @@ import { fileURLToPath } from 'node:url'
  */
 export default {
   publicDir: fileURLToPath(new URL('./public', import.meta.url)),
+  define: {
+    // `slidev export --dark` corre en ESTE mismo proceso: el flag se inyecta
+    // al cliente como constante para que mermaid hornee la caja oscura desde
+    // el primer render (el exportador aplica emulateMedia DESPUÉS de cargar,
+    // demasiado tarde para detectar el tema en tiempo de ejecución).
+    __UD_EXPORT_DARK__: JSON.stringify(process.argv.includes('--dark')),
+  },
 }
