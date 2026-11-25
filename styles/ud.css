@@ -569,6 +569,10 @@ html.dark .ud-highlight {
      arriba y la etiqueta "¿Sigue?" la cruzaba la línea del flujo) */
   margin-top: 1.1em;
   overflow: hidden;
+  /* La slide es flex-column: sin esto, cuando la columna se llena el host
+     se ENCOGE y recorta el SVG en silencio (bug: "mermaid recortado +18px").
+     Mejor desbordar visible (gap al pie) que cortar el diagrama. */
+  flex-shrink: 0;
 }
 
 /* ...salvo cuando el diagrama va justo debajo del título: ahí el aire ya lo
