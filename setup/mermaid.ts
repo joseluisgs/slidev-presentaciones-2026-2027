@@ -19,6 +19,12 @@ export default defineMermaidSetup(() => {
       primaryColor: '#7289da',
       primaryTextColor: '#ffffff',
       primaryBorderColor: '#4967cf',
+      // 🔴 Texto de las etiquetas (.label → nodos sin style + etiquetas de
+      // flecha): mermaid usa `nodeTextColor || textColor`. Sin esto salía
+      // #ffffff y el texto de las flechas era blanco sobre fondo blanco
+      // (invisible en claro, cajita blanca en oscuro). Los nodos con
+      // `style ... color:#fff` llevan inline !important y no se ven afectados.
+      nodeTextColor: '#142d44',
       secondaryColor: '#f6f6f7',
       secondaryTextColor: '#3c3c43',
       tertiaryColor: '#eef1fb',
