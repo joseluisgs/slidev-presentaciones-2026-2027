@@ -581,6 +581,13 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
+/* Diagrama casi cuadrado (árbol de pilares): a ancho completo se hacia
+   demasiado alto. Envolverlo en .ud-mer-angosto lo estrecha a 384px para
+   que quepa sin pasar del tope del host. */
+.slidev-layout .ud-mer-angosto .mermaid {
+  max-width: 384px;
+}
+
 /* Separación entre bloques apilados dentro de la misma columna */
 .slidev-layout .ud-window:not(:first-child),
 .slidev-layout .ud-real:not(:first-child),
