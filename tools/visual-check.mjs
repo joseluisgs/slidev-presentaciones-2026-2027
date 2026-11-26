@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { calcularMetricas, imprimirMetricas } from './metricas.mjs';
 
 const __dir = path.dirname(fileURLToPath(import.meta.url));
 const DECK = path.resolve(__dir, '..'); // raíz del deck (…/slidev)
@@ -146,12 +147,23 @@ console.log(
   `visual-check · ${TOTAL} slides en el fuente · auditando ${pendientes.length} × ${TEMAS.length} tema(s) · umbral ${UMBRAL}px · ${URL_BASE}`
 );
 
-// ---------- 2. comprobación de servidor ----------
+// ---------- 2. comprobación de servidor + de que sirve ESTE md (P4) ----------
 try {
   const ctl = new AbortController();
   setTimeout(() => ctl.abort(), 5000);
-  await fetch(URL_BASE + '/1', { signal: ctl.signal });
-} catch {
+  const resp = await fetch(URL_BASE + '/1', { signal: ctl.signal });
+  const html = await resp.text();
+  // P4: el puerto debe servir EL md pedido — nunca auditar el dev de otra UD
+  const titleMd = (fs.readFileSync(FUENTE, 'utf8').match(/^title:\s*['"]?(.+?)['"]?\s*$/m) || [])[1];
+  const titleHtml = ((html.match(/<title>([^<]*)<\/title>/) || [])[1] || '').trim();
+  if (titleMd && titleHtml && !titleHtml.includes(titleMd) && !titleMd.includes(titleHtml)) {
+    console.error(
+      `ERROR: ${URL_BASE} sirve «${titleHtml}» y no «${titleMd}» — PUERTO EQUIVOCADO (¿dev de otra UD?). Pasa --url con el puerto correcto.`
+    );
+    process.exit(2);
+  }
+} catch (e) {
+  if (e && e.message && e.message.includes('PUERTO EQUIVOCADO')) throw e;
   console.error(`ERROR: no responde ${URL_BASE} — arranca el deck (npm run dev) o pasa --url`);
   process.exit(2);
 }
@@ -295,6 +307,9 @@ for (const tema of TEMAS) {
             const vr = svg.getBoundingClientRect();
             if (vr.bottom > hr.bottom + 2)
               mer.push({ estado: 'recortado', px: Math.round(vr.bottom - hr.bottom), elem: desc(host) });
+            // P6: centrado horizontal del SVG dentro de su host
+            const off = Math.abs(vr.left + vr.width / 2 - (hr.left + hr.width / 2));
+            if (off > 8) mer.push({ estado: 'descentrado', px: Math.round(off), elem: desc(host) });
           }
 
           // código con scroll (desborde interno)
@@ -438,6 +453,7 @@ fs.writeFileSync(rutaInforme, JSON.stringify({ ...reporte, estaticos: ESTATICOS 
 console.log('');
 console.log('=== RESUMEN ===');
 console.log(`slides auditadas: ${pendientes.length} × ${TEMAS.join(',')}  ·  fallos: ${fallosTotales}  ·  fallos estáticos: ${ESTATICOS.length}`);
+imprimirMetricas(calcularMetricas(slidesSrc)); // P8: métricas §7.2 de un vistazo
 console.log(`informe: ${path.relative(process.cwd(), rutaInforme)}`);
 console.log(`capturas: ${path.relative(process.cwd(), SALIDA_CAP)} (solo fallos)`);
 process.exit(fallosTotales + ESTATICOS.length > 0 ? 1 : 0);
