@@ -11,6 +11,9 @@ Presentaciones para los módulos impartidos en el ciclo de Desarrollo de Aplicac
 
 1. [PROG](PROG/) — **1DAW. Programación**
    - [UD01 · Introducción a la Programación Software](PROG/UD01.md)
+   - [UD02 · Programación Estructurada y Modular](PROG/UD02.md)
+   - [UD03 · Almacenamiento estático y cadenas](PROG/UD03.md)
+   - [UD04 · Programación Orientada a Objetos](PROG/UD04.md)
 
 **Plantilla:**
 
@@ -29,6 +32,14 @@ npm run build:UDXX        # build de producción (dist/UDXX)
 npm run export:UDXX       # exporta PDF tema claro → presentaciones/UDXX-claro.pdf
 npm run export:UDXX:dark  # exporta PDF tema oscuro → presentaciones/UDXX-oscuro.pdf
 npm run check:UDXX        # auditoría visual (tools/visual-check.mjs)
+```
+
+Herramientas de QA (siempre con su `--md`, sin navegador salvo la auditoría):
+
+```bash
+node tools/validar.mjs --md PROG/UD01.md                      # validador estático (<2s): estructura, frontmatter, cierre, métricas
+node tools/inventario.mjs --md PROG/UD01.md --doc <apuntes>   # inventario doc↔deck: lagunas candidatas antes de escribir
+node tools/cerrar-ud.mjs --md PROG/UD01.md --url <dev>        # cierra la UD: estático → auditoría → 2 PDFs
 ```
 
 ## Autor
