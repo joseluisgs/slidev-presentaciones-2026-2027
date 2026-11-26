@@ -15,6 +15,9 @@ Presentaciones para los módulos impartidos en el ciclo de Desarrollo de Aplicac
    - [UD03 · Almacenamiento estático y cadenas](PROG/UD03.md)
    - [UD04 · Programación Orientada a Objetos](PROG/UD04.md)
 
+2. [EDS](EDS/) — **1DAW. Entornos de Desarrollo**
+   - [UD03 · Sistema de Control de Versiones](EDS/UD03.md)
+
 **Plantilla:**
 
 - [XX](XX/) — plantilla demo (`UDXX.md`), el molde del que se copian las UD nuevas
@@ -24,21 +27,27 @@ Presentaciones para los módulos impartidos en el ciclo de Desarrollo de Aplicac
 
 ## Cómo se usa
 
-Una línea npm por presentación, con el sufijo de la UD (`UDXX` se sustituye por la UD real):
+Una línea npm por presentación, con el nombre **`<MÓDULO>-<UD>`** (`XX-UDXX`
+es el placeholder: `PROG-UD01`, `EDS-UD03`…). Los PDF salen en
+`presentaciones/<MÓDULO>/`:
 
 ```bash
-npm run dev:UDXX          # desarrollo en local (slidev XX/UDXX.md)
-npm run build:UDXX        # build de producción (dist/UDXX)
-npm run export:UDXX       # exporta PDF tema claro → presentaciones/UDXX-claro.pdf
-npm run export:UDXX:dark  # exporta PDF tema oscuro → presentaciones/UDXX-oscuro.pdf
-npm run check:UDXX        # auditoría visual (tools/visual-check.mjs)
+npm run dev:XX-UDXX          # desarrollo en local (slidev XX/UDXX.md)
+npm run build:XX-UDXX        # build de producción (dist/XX-UDXX)
+npm run export:XX-UDXX       # exporta PDF tema claro → presentaciones/XX/UDXX-claro.pdf
+npm run export:XX-UDXX:dark  # exporta PDF tema oscuro → presentaciones/XX/UDXX-oscuro.pdf
+npm run check:XX-UDXX        # auditoría visual (tools/visual-check.mjs)
 ```
+
+Ejemplos: `npm run dev:PROG-UD01` · `npm run export:EDS-UD03:dark` ·
+`npm run check:EDS-UD03`.
 
 Herramientas de QA (siempre con su `--md`, sin navegador salvo la auditoría):
 
 ```bash
 node tools/validar.mjs --md PROG/UD01.md                      # validador estático (<2s): estructura, frontmatter, cierre, métricas
 node tools/inventario.mjs --md PROG/UD01.md --doc <apuntes>   # inventario doc↔deck: lagunas candidatas antes de escribir
+node tools/medir.mjs --md PROG/UD01.md --slides 46,61 [--ejecutar]  # medición con MARGEN por slide tras cada arreglo (gap ≥35)
 node tools/cerrar-ud.mjs --md PROG/UD01.md --url <dev>        # cierra la UD: estático → auditoría → 2 PDFs
 ```
 

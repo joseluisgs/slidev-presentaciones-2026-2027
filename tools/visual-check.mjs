@@ -37,7 +37,7 @@ const flag = (k) => argv.includes(k);
 const URL_BASE = opt('--url', 'http://[::1]:3030').replace(/\/+$/, '');
 const FUENTE = path.resolve(DECK, opt('--fuente', opt('--md', 'slides.md')));
 const SALIDA = path.resolve(DECK, opt('--salida', 'tools/out'));
-const TEMAS_ARG = opt('--temas', 'both');
+const TEMAS_ARG = opt('--temas', 'light'); // 🔴 un solo tema (§10): el dark es el mismo layout
 const TEMAS =
   TEMAS_ARG === 'both' || TEMAS_ARG === 'light,dark'
     ? ['light', 'dark']

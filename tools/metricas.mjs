@@ -29,8 +29,12 @@ export function calcularMetricas(slides) {
           .replace(/\s+/g, ' ')
           .trim()
       )
-      .filter((p) => p.length > 350).length
-    const comps = (sinFences.match(/<[A-Z][A-Za-z0-9]*/g) || []).length
+      // Los listados NO son párrafo: se miden como prosa (§7.2)
+      .filter((p) => p.length > 350 && !/^([-*] |\d+\. )/.test(p)).length
+    const comps =
+      (sinFences.match(/<[A-Z][A-Za-z0-9]*/g) || []).length +
+      (sinFences.match(/<img\b/g) || []).length + // imágenes = componentes visuales
+      ((raw.match(/```mermaid/g) || []).length) // diagramas = componentes visuales
     const emojis = (prosa.match(RE_EMOJI) || []).length
 
     porSlide.push({ n: i + 1, layout, esContenido, prosa: prosa.length, parrafosLargos, comps, emojis })

@@ -25,6 +25,7 @@ tools/out/
 
 # --- Transparencias (PDF): NO viven aquí ---
 # El profesor las copia cuando y donde diga; aquí solo se genera el output.
+presentaciones/**/*.pdf
 presentaciones/*.pdf
 presentaciones/*.pptx
 

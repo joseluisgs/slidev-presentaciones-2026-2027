@@ -62,7 +62,7 @@ if (!SIN_AUD) {
     path.join(__dir, 'visual-check.mjs'),
     '--md', MD,
     '--url', URL_,
-    '--temas', 'both',
+    '--temas', 'light',
     '--umbral', UMBRAL,
   ])
   if (rc !== 0) {

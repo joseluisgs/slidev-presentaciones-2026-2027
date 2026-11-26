@@ -64,6 +64,21 @@ const cssUd = fs.existsSync(path.join(RAIZ, 'styles/ud.css'))
   ? fs.readFileSync(path.join(RAIZ, 'styles/ud.css'), 'utf8')
   : ''
 
+// ---------- lenguajes de fence (bundle de Shiki/Slidev) ----------
+// Un fence fuera del bundle revienta el dev: "Language X is not included
+// in this bundle". mermaid lo intercepta Slidev antes que Shiki.
+const RESERVADOS = new Set(['mermaid', 'text'])
+let LANGS = null
+try {
+  const sh = await import('shiki')
+  LANGS = new Set([
+    ...Object.keys(sh.bundledLanguages || {}),
+    ...Object.keys(sh.bundledLanguagesAlias || {}),
+  ])
+} catch {
+  LANGS = new Set(['csharp', 'bash', 'xml', 'text', 'java', 'powershell', 'ini', 'json', 'yaml'])
+}
+
 // ---------- 1. frontmatter global (headmatter de la slide 1) ----------
 const primeraLinea = (re) => {
   const m = fuente.match(re)
@@ -78,6 +93,14 @@ const usaRepoBadge = /<RepoBadge/.test(fuente)
 if (usaRepoBadge && !/^udRepo:/m.test(fuente))
   fallo('frontmatter: falta "udRepo:" — RepoBadge lo lee de ahí (§6.4-26)')
 
+// fences con lenguaje fuera del bundle de Shiki (revienta el dev, §7.3)
+for (const m of fuente.matchAll(/^```([A-Za-z0-9+#-]+)[ \t]*$/gm)) {
+  const l = m[1].toLowerCase()
+  if (RESERVADOS.has(l)) continue
+  if (LANGS && !LANGS.has(l))
+    fallo(`fence \`\`\`${m[1]}: lenguaje fuera del bundle de Shiki (el dev falla con "Language ... not included") — usar text`)
+}
+
 // ---------- 2. por slide ----------
 const todo = [] // contenido concatenado en orden (para orden Materiales→RA→Índice)
 slides.forEach((s, i) => {
@@ -85,6 +108,11 @@ slides.forEach((s, i) => {
   const c = typeof s.content === 'string' ? s.content : ''
   todo.push(c)
   const sinFences = c.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '').replace(/'[^'\n]*'/g, '')
+
+  // siglas internas prohibidas en slides (§7.5): PROG/EDS/DWES solo en rutas/scripts
+  const sinRutas = c.replace(/src="[^"]*"/g, '').replace(/\]\([^)]*\)/g, '')
+  const sigla = sinRutas.match(/\b(PROG|EDS|DWES)\b/)
+  if (sigla) fallo(`${n}: sigla interna «${sigla[1]}» prohibida en la transparencia (§7.5) — usar el nombre completo del módulo`)
 
   // TipBox con tipo inválido
   for (const m of c.matchAll(/<TipBox\s+type="([^"]+)"/g))
@@ -113,8 +141,9 @@ slides.forEach((s, i) => {
   if (/<style[\s>]/.test(sinFences)) fallo(`${n}: bloque <style> en el deck (los estilos van en styles/ud.css, §6.4-34)`)
   for (const m of sinFences.matchAll(/<(\w+)[^>]*\sstyle="/g)) {
     const tag = m[1].toLowerCase()
-    if (tag === 'img') aviso(`${n}: style= en <img> (dimensionado puntual — si se repite, mejor clase en ud.css)`)
-    else aviso(`${n}: atributo style= en <${tag}> (§6.4-34: preferible clase grid/ud-* en styles/ud.css)`)
+    // Las imágenes usan el patrón oficial del original (mx-auto + doble tope): no avisa
+    if (tag === 'img') continue
+    aviso(`${n}: atributo style= en <${tag}> (§6.4-34: preferible clase grid/ud-* en styles/ud.css)`)
   }
   // palabras/prohibidas (§6.4-35)
   for (const linea of c.split('\n')) {
@@ -134,6 +163,76 @@ const joined = todo.join('\n')
 if (!/¡Hasta el próximo deploy!/.test(joined)) fallo('cierre: falta «¡Hasta el próximo deploy! 👋» (§7.1)')
 if (!/<span class="ud-emoji">👋<\/span>/.test(joined)) fallo('cierre: el emoji 👋 debe ir en <span class="ud-emoji"> (§7.1)')
 if (!/UD\d{2}\s*·\s/.test(joined)) fallo('cierre: falta la línea «UD0X · Título» (nunca «Tema 0X»)')
+
+// ---------- PORTADA E INICIO (estructura §7.5) ----------
+const c1 = typeof slides[0].content === 'string' ? slides[0].content : ''
+const f1 = slides[0].frontmatter || {}
+if (f1.layout !== 'UDCover') fallo('portada: layout debe ser UDCover (§7.5)')
+if (!String(f1.class || '').includes('ud-cover-bg')) fallo('portada: falta class="ud-cover-bg"')
+for (const slot of ['::top::', '::default::', '::bottom::'])
+  if (!c1.includes(slot)) fallo(`portada: falta el slot ${slot} (§7.5)`)
+if (!/^# .+/m.test(c1)) fallo('portada: falta el # Título (h1)')
+if (!/^### .+/m.test(c1)) fallo('portada: falta el ### subtítulo (§8: atractivo, ≤10 palabras)')
+if (!/ud-pill/.test(c1)) fallo('portada: falta el ud-pill con módulo · curso · año')
+if (!/ud-author/.test(c1) || !/ud-avatar/.test(c1)) fallo('portada: falta el bloque ud-author con avatar')
+if (!/<PacMan/.test(c1) || !/Cargando ideas/.test(c1)) fallo('portada: falta el <PacMan> con label "Cargando ideas..."')
+if (!f1.title) fallo('portada: falta "title" en el frontmatter')
+if (/\b(PROG|EDS|DWES)\b/.test(String(f1.title || ''))) fallo('portada: el "title" no debe contener siglas internas (PROG/EDS/DWES) — §7.5')
+if (slides.length < 5) fallo('inicio: el deck necesita al menos portada + Materiales + RA + Índice + portada de punto')
+else {
+  const c2 = typeof slides[1].content === 'string' ? slides[1].content : ''
+  const c3 = typeof slides[2].content === 'string' ? slides[2].content : ''
+  if (!/^## 📦 Materiales de la unidad/m.test(c2)) fallo('inicio: la slide2 debe ser «## 📦 Materiales de la unidad» (§7.5)')
+  if (!/<RepoBadge/.test(c2)) fallo('inicio: Materiales sin <RepoBadge>')
+  if (!/^## 🎯 Resultados de aprendizaje/m.test(c3) || !/<RaaCcee/.test(c3))
+    fallo('inicio: la slide3 debe ser «## 🎯 Resultados de aprendizaje…» con <RaaCcee> (§7.5)')
+  // El Índice va en la4 o la5 (UDs con dos RA), siempre ANTES de la portada del1er punto
+  const iSeccion = slides.findIndex((s, i) => i >= 2 && (s.frontmatter || {}).layout === 'section')
+  const hasta = iSeccion > 0 ? iSeccion : slides.length
+  let iIndice = -1
+  for (let i = 3; i < hasta; i++) {
+    const c = typeof slides[i].content === 'string' ? slides[i].content : ''
+    if (/^## 📚 Índice/.test(c)) { iIndice = i; break }
+  }
+  if (iIndice < 0) fallo('inicio: no se encuentra el «## 📚 Índice» entre el RA y la portada del primer punto (§7.5)')
+  else {
+    const cI = typeof slides[iIndice].content === 'string' ? slides[iIndice].content : ''
+    if (!/<TopicCard/.test(cI)) fallo('inicio: el Índice no tiene <TopicCard>')
+    if (!/<RepoBadge/.test(cI)) fallo('inicio: el Índice sin franja de Materiales/RepoBadge (§7.5)')
+  }
+}
+
+// ---------- CIERRE (detalle de la ÚLTIMA slide) ----------
+const ult = slides[slides.length - 1]
+const cU = typeof ult.content === 'string' ? ult.content : ''
+if ((ult.frontmatter || {}).layout !== 'center') fallo('cierre: la última slide debe tener layout: center')
+if (!/<PacMan :size="64"/.test(cU)) fallo('cierre: falta <PacMan :size="64" />')
+if (!/<b class="text-lg">UD\d{2} · /.test(cU)) fallo('cierre: falta el título «UD0X · Título» en negrita')
+if (!/class="ud-pill"/.test(cU)) fallo('cierre: falta el ud-pill del módulo')
+if (!/<RepoBadge[^>]*size="lg"/.test(cU)) fallo('cierre: falta el <RepoBadge size="lg">')
+if (!/class="ud-social"/.test(cU)) fallo('cierre: falta el bloque ud-social')
+if (!/joseluisgs\.dev/.test(cU)) fallo('cierre: faltan los enlaces de ud-social')
+
+// orden estructural (§6.4-42): portadas de punto ascendentes + cierre al final
+const secciones = []
+slides.forEach((s, i) => {
+  const c = typeof s.content === 'string' ? s.content : ''
+  const fm = s.frontmatter || {}
+  if (fm.layout === 'section') {
+    const num = (c.match(/ud-section-number">(\d+)/) || [])[1]
+    const tit = (c.match(/^#\s+(.+)$/m) || [])[1] || ''
+    secciones.push({ n: i + 1, num: num ? +num : null, tit: tit.trim() })
+  }
+})
+let anterior = 0
+for (const sec of secciones) {
+  if (sec.num == null) continue
+  if (sec.num <= anterior) fallo(`estructura: la portada «${sec.tit}» (${sec.num}) va DESPUÉS de la ${anterior} — orden ascendente (§6.4-42)`)
+  anterior = sec.num
+}
+const iCierre = slides.findIndex((s) => /¡Hasta el próximo deploy/.test(typeof s.content === 'string' ? s.content : ''))
+if (iCierre < 0) fallo('estructura: no se encuentra el cierre (§6.4-42)')
+else if (iCierre !== slides.length - 1) fallo(`estructura: el cierre está en la slide ${iCierre + 1} y quedan ${slides.length - iCierre - 1} después — debe ser la ÚLTIMA (§6.4-42)`)
 
 const posDe = (re) => {
   for (let i = 0; i < todo.length; i++) if (re.test(todo[i])) return i + 1
