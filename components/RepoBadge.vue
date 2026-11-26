@@ -1,19 +1,40 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useNav } from '@slidev/client'
+
 /**
  * Insignia del repositorio de la unidad con el icono de GitHub.
  * Se usa en la portada y en el cierre de la presentación.
+ *
+ * El repo lo define cada deck en SU HEADMATTER (`udRepo`), igual que
+ * `udFooter`: al cambiar de módulo/UD solo se cambia esa línea del
+ * frontmatter y los globals no se tocan. La prop `repo` tiene prioridad
+ * por si se quiere forzar en una slide concreta.
  */
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** Rótulo pequeño encima del badge (p. ej. "Materiales de la unidad") */
     caption?: string
     /** Tamaño del badge */
     size?: 'sm' | 'lg'
+    /** Repo forzado (opcional): si no, se lee del headmatter `udRepo` */
+    repo?: string
   }>(),
-  { caption: undefined, size: 'sm' },
+  { caption: undefined, size: 'sm', repo: undefined },
 )
 
-const url = 'https://github.com/joseluisgs/Programacion-01-2026-2027'
+const { slides, currentSlideRoute } = useNav()
+
+/** Repo de la unidad: prop > headmatter (slide 1) > frontmatter actual > UD01. */
+const repoName = computed(() => {
+  if (props.repo) return props.repo
+  const head = slides.value?.[0]?.meta?.slide?.frontmatter
+  if (head?.udRepo) return head.udRepo
+  const fm = currentSlideRoute.value?.meta?.slide?.frontmatter
+  return fm?.udRepo ?? 'Programacion-01-2026-2027'
+})
+
+const url = computed(() => `https://github.com/joseluisgs/${repoName.value}`)
 </script>
 
 <template>
@@ -41,7 +62,7 @@ const url = 'https://github.com/joseluisgs/Programacion-01-2026-2027'
     <span class="ud-repo-label">
       <span class="ud-repo-org">joseluisgs</span>
       <span class="ud-repo-sep">/</span>
-      <span class="ud-repo-name">Programacion-01-2026-2027</span>
+      <span class="ud-repo-name">{{ repoName }}</span>
     </span>
     <span class="ud-repo-cta" aria-label="Ver repositorio">→</span>
     </a>
@@ -61,7 +82,8 @@ const url = 'https://github.com/joseluisgs/Programacion-01-2026-2027'
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 700;
-  color: var(--ud-text-subtle);
+  color: var(--ud-text);
+  opacity: 0.7;
 }
 .ud-repo {
   display: inline-flex;

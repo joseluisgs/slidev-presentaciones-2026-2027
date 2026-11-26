@@ -70,6 +70,51 @@ if (!TOTAL) {
   process.exit(2);
 }
 
+// ---------- 1b. auditoría EXTREMA: comprobaciones ESTÁTICAS (sin navegador) ----------
+const TIPOS_TIPBOX = new Set(['consejo', 'analogia', 'nota', 'truco', 'advertencia']);
+const TAGS_HTML = new Set(
+  ('div span p b i em strong br img a ul ol li table thead tbody tr th td h1 h2 h3 h4 code pre ' +
+    'blockquote hr details summary sub sup small kbd mark section article header footer nav aside ' +
+    'main form input button select option label textarea video audio source canvas svg path g text ' +
+    'rect circle line tspan style script').split(' '),
+);
+const compsDir = path.join(DECK, 'components');
+const cssPath = path.join(DECK, 'styles/ud.css');
+const cssUd = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, 'utf8') : '';
+const ESTATICOS = [];
+slidesSrc.forEach((s, i) => {
+  const n = i + 1;
+  const c = typeof s.content === 'string' ? s.content : '';
+  // TipBox con tipo inválido (p.ej. "analogía" con tilde → no pinta estilo)
+  for (const m of c.matchAll(/<TipBox\s+type="([^"]+)"/g))
+    if (!TIPOS_TIPBOX.has(m[1]))
+      ESTATICOS.push(`${n}: TipBox type="${m[1]}" inválido (válido: consejo|analogia|nota|truco|advertencia)`);
+  // componentes inexistentes (fuera de bloques de código y de cadenas '...')
+  const sinFences = c.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '').replace(/'[^'\n]*'/g, '');
+  for (const m of sinFences.matchAll(/<([A-Z][A-Za-z0-9]*)/g)) {
+    const tag = m[1];
+    if (TAGS_HTML.has(tag)) continue;
+    if (!fs.existsSync(path.join(compsDir, `${tag}.vue`)))
+      ESTATICOS.push(`${n}: <${tag}> no existe en components/`);
+  }
+  // divs desbalanceados
+  const abre = (sinFences.match(/<div\b/g) || []).length;
+  const cierra = (sinFences.match(/<\/div>/g) || []).length;
+  if (abre !== cierra) ESTATICOS.push(`${n}: divs desbalanceados (${abre} abren / ${cierra} cierran)`);
+  // v-click en markdown (solo permitido dentro de RaaCcee/Objetivos, que es en .vue)
+  if (/v-click/.test(sinFences)) ESTATICOS.push(`${n}: v-click en el markdown (solo en RaaCcee/Objetivos)`);
+  // clases ud-* sin definir
+  for (const m of sinFences.matchAll(/class="([^"]+)"/g))
+    for (const cl of m[1].split(/\s+/)) {
+      if (cl && cl.startsWith('ud-') && cssUd && !cssUd.includes(`.${cl}`))
+        ESTATICOS.push(`${n}: clase .${cl} sin definir en styles/ud.css`);
+    }
+});
+if (ESTATICOS.length) {
+  console.log(`\n=== FALLOS ESTÁTICOS (${ESTATICOS.length}) — sin navegador ===`);
+  for (const e of ESTATICOS) console.log('ESTÁTICO slide ' + e);
+}
+
 // rango --slides 1-60,120
 let rango = null;
 const rangoArg = opt('--slides', null);
@@ -202,6 +247,26 @@ for (const tema of TEMAS) {
           }
           const gap = Math.round(pieTop - maxBot);
 
+          // EXTREMA: hueco bajo el título (h2 → primer bloque de contenido)
+          let minTop = Infinity;
+          const h2El = pg.querySelector('h2');
+          const h2Bottom = h2El ? h2El.getBoundingClientRect().bottom : box.top;
+          for (const e of items) {
+            if (h2El && e === h2El) continue;
+            const t = e.getBoundingClientRect().top;
+            if (t < minTop) minTop = t;
+          }
+          const topGap = Number.isFinite(minTop) ? Math.round(minTop - h2Bottom) : 0;
+
+          // EXTREMA: columnas de grid sin contenido
+          const gridVacias = [];
+          for (const grid of pg.querySelectorAll('.grid')) {
+            const hijos = [...grid.children].filter((h) => h.tagName && h.tagName.toLowerCase() === 'div');
+            hijos.forEach((h, i) => {
+              if (!h.querySelector(SEL)) gridVacias.push(`columna ${i + 1} de «${desc(grid).slice(0, 40)}»`);
+            });
+          }
+
           // desbordes laterales
           const overflow = [];
           for (const e of items) {
@@ -263,6 +328,8 @@ for (const tema of TEMAS) {
             num: mm ? +mm[1] : null,
             titulo: h ? h.innerText.trim().slice(0, 60) : '',
             gap,
+            topGap,
+            gridVacias,
             peor: peor ? desc(peor) : '',
             overflow,
             mermaid: mer,
@@ -293,6 +360,16 @@ for (const tema of TEMAS) {
       if (r.num !== n) probs.push(`DESYNC: visible la ${r.num}`);
       if (r.gap < 0) probs.push(`DESBORDA el pie en ${-r.gap}px (${r.peor})`);
       else if (r.gap < UMBRAL) probs.push(`apretado: gap ${r.gap}px < ${UMBRAL} (${r.peor})`);
+      // vacío solo en layouts de contenido: section/center/cover van centrados por diseño
+      if (layout === 'default') {
+        // con centrado vertical activo, el slack se reparte: hueco >260 bajo
+        // el título = slide realmente corta (rellenar con doc)
+        if (r.topGap > 260) probs.push(`vacío arriba +${r.topGap}px`);
+        // umbral calibrado contra UD01 (diseño de referencia del profesor):
+        // sus slides admiten hasta ~449px de aire abajo sin quejarse
+        if (r.gap > 460) probs.push(`vacío abajo +${r.gap}px`);
+        for (const g of r.gridVacias || []) probs.push(`grid con ${g} vacía`);
+      }
       for (const o of r.overflow || [])
         probs.push(`overflowX ${o.lado} +${o.px}px (${o.elem})`);
       for (const m of r.mermaid || [])
@@ -356,11 +433,11 @@ const reporte = {
   resultados,
 };
 const rutaInforme = path.join(SALIDA, 'layout-report.json');
-fs.writeFileSync(rutaInforme, JSON.stringify(reporte, null, 2), 'utf8');
+fs.writeFileSync(rutaInforme, JSON.stringify({ ...reporte, estaticos: ESTATICOS }, null, 2), 'utf8');
 
 console.log('');
 console.log('=== RESUMEN ===');
-console.log(`slides auditadas: ${pendientes.length} × ${TEMAS.join(',')}  ·  fallos: ${fallosTotales}`);
+console.log(`slides auditadas: ${pendientes.length} × ${TEMAS.join(',')}  ·  fallos: ${fallosTotales}  ·  fallos estáticos: ${ESTATICOS.length}`);
 console.log(`informe: ${path.relative(process.cwd(), rutaInforme)}`);
 console.log(`capturas: ${path.relative(process.cwd(), SALIDA_CAP)} (solo fallos)`);
-process.exit(fallosTotales > 0 ? 1 : 0);
+process.exit(fallosTotales + ESTATICOS.length > 0 ? 1 : 0);

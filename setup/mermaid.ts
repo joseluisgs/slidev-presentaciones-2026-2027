@@ -59,6 +59,12 @@ export default defineMermaidSetup(() => {
       tertiaryColor: '#eef1fb',
       lineColor: '#7289da',
       textColor: '#3c3c43',
+      // 🔴 Mermaid 11 usa `look: neo` por defecto: añade drop-shadow (sombra/
+      // blur) y borde con degradado a nodos y CAJAS (subgraphs). El estilo del
+      // profesor: cajas SIN sombra, con una línea azul muy suave (1px).
+      dropShadow: 'none',
+      useGradient: false,
+      nodeBorder: '#7289da',
       noteBkgColor: '#eef1fb',
       noteTextColor: '#3c3c43',
       noteBorderColor: '#7289da',

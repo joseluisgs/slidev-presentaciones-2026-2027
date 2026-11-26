@@ -103,10 +103,10 @@ html.dark {
   background-color: var(--ud-bg);
 }
 
-/* Layout "default": el contenido se pegaba arriba y dejaba una banda muerta
-   de hasta 340px bajo el pie (bug: "media slide vacía").
-   Con flex + margin auto, el bloque de contenido se CENTRA en el espacio
-   sobrante y el título sigue arriba. Los layouts especiales (cover, section,
+/* Layout "default": contenido VERTICALMENTE CENTRADO entre el título y el
+   pie (decisión del profesor): el aire se reparte POR IGUAL arriba y abajo
+   del bloque de contenido — nunca pegado arriba (con el título flotando
+   sobre un hueco) ni pegado abajo. Los layouts especiales (cover, section,
    statement, center) ya vienen centrados de Slidev y no se tocan. */
 .slidev-layout.default {
   display: flex;
@@ -116,7 +116,7 @@ html.dark {
 .slidev-layout.default > h2 + * {
   /* !important: el centrado manda SIEMPRE sobre los márgenes fijos de los
      bloques (bug: `.ud-real:not(:first-child)` (0,3,0) ganaba al auto
-     (0,2,1) y la slide quedaba pegada arriba con la mitad inferior vacía) */
+     (0,2,1) y la slide quedaba pegada arriba) */
   margin-top: auto !important;
 }
 
@@ -339,8 +339,7 @@ html.dark .ud-pill {
    ============================================================ */
 .ud-cover-bg {
   background:
-    radial-gradient(ellipse 80% 60% at 85% -10%, rgba(114, 137, 218, 0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 10% 110%, rgba(47, 161, 197, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 50% at 85% -10%, rgba(114, 137, 218, 0.35) 0%, transparent 60%),
     var(--ud-bg);
 }
 
@@ -581,6 +580,13 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
+/* Diagrama naturalmente ESTRECHO y ALTO (árbol de pilares de la POO): a
+   ancho completo mermaid lo escala hacia arriba y revienta el host.
+   Limitar el ancho es lo que hacía el deck original (trampa 18). */
+.slidev-layout .ud-mer-angosto .mermaid {
+  max-width: 384px;
+}
+
 /* Separación entre bloques apilados dentro de la misma columna */
 .slidev-layout .ud-window:not(:first-child),
 .slidev-layout .ud-real:not(:first-child),
@@ -626,7 +632,19 @@ html.dark .ud-highlight {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5em 0.7em;
+  gap: 0.6em 0.9em;
+}
+
+/* ⚠️ El markdown envuelve los enlaces en un <p>: el gap del contenedor NO
+   llega a los botones (bug: "los botones nunca se separaban"). El flex con
+   gap va en el <p>, que es el padre real de las píldoras. */
+.ud-social p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em 0.9em;
+  margin: 0;
 }
 
 /* Pildora punteada: a diferencia de .ud-pill (sólida), la de las redes es
@@ -649,16 +667,25 @@ html.dark .ud-highlight {
     border-color 0.15s ease;
 }
 
-.ud-social-pill:hover {
+.ud-social-pill:hover,
+html.dark .ud-social-pill:hover {
   transform: translateY(-2px);
-  background: var(--ud-accent);
-  border-color: var(--ud-accent);
+  background: var(--ud-accent-strong);
+  border-color: var(--ud-accent-strong);
   border-style: solid;
-  color: var(--ud-on-accent);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(114, 137, 218, 0.45);
 }
 
 html.dark .ud-social-pill {
   color: #a3b1ee;
+}
+
+/* Cierre: la línea de la UD con EL MISMO tono que "Materiales" (RepoBadge
+   caption): var(--ud-text) al 70% — decisión del profesor */
+.slidev-layout.center .text-lg {
+  color: var(--ud-text);
+  opacity: 0.7;
 }
 
 /* ============================================================
