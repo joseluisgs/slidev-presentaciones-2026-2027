@@ -580,11 +580,14 @@ html.dark .ud-highlight {
   margin-top: 0;
 }
 
-/* Diagrama naturalmente ESTRECHO y ALTO (árbol de pilares de la POO): a
-   ancho completo mermaid lo escala hacia arriba y revienta el host.
-   Limitar el ancho es lo que hacía el deck original (trampa 18). */
-.slidev-layout .ud-mer-angosto .mermaid {
-  max-width: 384px;
+/* Centrado HORIZONTAL de los diagramas: mermaid le pone al SVG un max-width
+   en línea con su ancho intrínseco, así que un diagrama más estrecho que el
+   host se queda pegado a la izquierda. Con el host en flex, el SVG se
+   reparte por el centro. */
+.slidev-layout .mermaid {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 /* Separación entre bloques apilados dentro de la misma columna */
