@@ -325,8 +325,15 @@ for (const tema of TEMAS) {
             .filter((i) => i.complete && i.naturalWidth === 0)
             .map((i) => i.getAttribute('src') || '(sin src)');
 
-          // markdown literal sin renderizar
-          const inner = pg.innerText || '';
+          // markdown literal sin renderizar (SOLO en prosa: `**` dentro de
+          // un fence —p. ej. el operador potencia de Python `x**2`— es legítimo)
+          const tw = document.createTreeWalker(pg, NodeFilter.SHOW_TEXT);
+          let inner = "";
+          while (tw.nextNode()) {
+            const nd = tw.currentNode;
+            if (nd.parentElement && nd.parentElement.closest("pre, code")) continue;
+            inner += nd.nodeValue + " ";
+          }
           let mdLiteral = null;
           const ix = inner.indexOf('**');
           if (ix >= 0) mdLiteral = inner.slice(Math.max(0, ix - 20), ix + 40).replace(/\s+/g, ' ');
