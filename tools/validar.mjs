@@ -174,6 +174,7 @@ for (const slot of ['::top::', '::default::', '::bottom::'])
 if (!/^# .+/m.test(c1)) fallo('portada: falta el # Título (h1)')
 if (!/^### .+/m.test(c1)) fallo('portada: falta el ### subtítulo (§8: atractivo, ≤10 palabras)')
 if (!/ud-pill/.test(c1)) fallo('portada: falta el ud-pill con módulo · curso · año')
+if (!/class="ud-logo"/.test(c1)) fallo('portada: falta el <img> del logo con class="ud-logo" (§7.5)')
 if (!/ud-author/.test(c1) || !/ud-avatar/.test(c1)) fallo('portada: falta el bloque ud-author con avatar')
 if (!/<PacMan/.test(c1) || !/Cargando ideas/.test(c1)) fallo('portada: falta el <PacMan> con label "Cargando ideas..."')
 if (!f1.title) fallo('portada: falta "title" en el frontmatter')
@@ -184,8 +185,16 @@ else {
   const c3 = typeof slides[2].content === 'string' ? slides[2].content : ''
   if (!/^## 📦 Materiales de la unidad/m.test(c2)) fallo('inicio: la slide2 debe ser «## 📦 Materiales de la unidad» (§7.5)')
   if (!/<RepoBadge/.test(c2)) fallo('inicio: Materiales sin <RepoBadge>')
+  if (!/Todo el material de la UD\d{2} está publicado en el repositorio de GitHub, organizado por carpetas:/.test(c2))
+    fallo('inicio: Materiales sin la prosa literal del molde «Todo el material de la UD0X está publicado en…» (§7.5)')
+  if (!/Clónalo, forquéalo o descárgalo en zip: el material siempre está a un clic/.test(c2))
+    fallo('inicio: Materiales sin la frase literal «Clónalo, forquéalo o descárgalo en zip…» (§7.5)')
+  if (!/caption="Repositorio con materiales de la unidad"/.test(c2))
+    fallo('inicio: Materiales sin caption="Repositorio con materiales de la unidad" (§7.5)')
   if (!/^## 🎯 Resultados de aprendizaje/m.test(c3) || !/<RaaCcee/.test(c3))
     fallo('inicio: la slide3 debe ser «## 🎯 Resultados de aprendizaje…» con <RaaCcee> (§7.5)')
+  if (/<RaaCcee/.test(c3) && !/<RaaCcee[^>]*code=/.test(c3))
+    fallo('inicio: <RaaCcee> sin prop code= — el badge del RA no pintaría (trampa 20)')
   // El Índice va en la4 o la5 (UDs con dos RA), siempre ANTES de la portada del1er punto
   const iSeccion = slides.findIndex((s, i) => i >= 2 && (s.frontmatter || {}).layout === 'section')
   const hasta = iSeccion > 0 ? iSeccion : slides.length
@@ -198,6 +207,8 @@ else {
   else {
     const cI = typeof slides[iIndice].content === 'string' ? slides[iIndice].content : ''
     if (!/<TopicCard/.test(cI)) fallo('inicio: el Índice no tiene <TopicCard>')
+    if (/<TopicCard/.test(cI) && !/<TopicCard[^>]*\s:?num=/.test(cI))
+      fallo('inicio: <TopicCard> sin :num — los números no pintarían (trampa 20)')
     if (!/<RepoBadge/.test(cI)) fallo('inicio: el Índice sin franja de Materiales/RepoBadge (§7.5)')
   }
 }

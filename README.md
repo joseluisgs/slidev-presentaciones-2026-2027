@@ -40,8 +40,8 @@ npm run export:XX-UDXX:dark  # exporta PDF tema oscuro → presentaciones/XX/UDX
 npm run check:XX-UDXX        # auditoría visual (tools/visual-check.mjs)
 ```
 
-Ejemplos: `npm run dev:PROG-UD01` · `npm run export:EDS-UD03:dark` ·
-`npm run check:EDS-UD03`.
+Ejemplos: `npm run dev:PROG-UD01` · `npm run export:EDS-UD02:dark` ·
+`npm run check:EDS-UD02`.
 
 Herramientas de QA (siempre con su `--md`, sin navegador salvo la auditoría):
 
